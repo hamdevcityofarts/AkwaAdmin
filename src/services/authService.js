@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // URL de base pour l'API
-const API_URL = 'https://backend.grandhotelaeroport.com/api';
+const API_URL = 'https://api.grandhotelsluxe.com/api';
 
 console.log('=== AUTH SERVICE INIT ===');
 console.log('VITE_BASE_API_URL from env:', import.meta.env.VITE_BASE_API_URL);

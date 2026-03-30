@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://backend.grandhotelaeroport.com/api' + '/utilisateurs';
+const API_URL = 'https://api.grandhotelsluxe.com/api' + '/utilisateurs';
 
 const api = axios.create({
   baseURL: API_URL,

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import reservationService from '../../services/reservationService';
 
-const API_URL = 'https://backend.grandhotelaeroport.com/api';
+const API_URL = 'https://api.grandhotelsluxe.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
