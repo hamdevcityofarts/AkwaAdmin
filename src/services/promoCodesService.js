@@ -194,4 +194,27 @@ const promoCodesService = {
   isCodeActive
 };
 
+
+// ✅ NOUVEAU — Récupérer les réservations d'un code promo (admin)
+export const getCodeReservations = async (id) => {
+  try {
+    const response = await api.get(`/codepromo/${id}/reservations`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Erreur récupération réservations code promo:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// ✅ NOUVEAU — Récupérer la liste des utilisateurs pour le select titulaire
+export const getUsers = async () => {
+  try {
+    const response = await api.get('/utilisateurs');
+    return response.data;
+  } catch (error) {
+    console.error('❌ Erreur récupération utilisateurs:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export default promoCodesService;

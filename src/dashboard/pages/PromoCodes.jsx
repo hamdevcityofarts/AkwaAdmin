@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Copy, Calendar, Users, Home, Filter } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { 
-  getCodesPromo, 
-  createCodePromo, 
-  updateCodePromo, 
-  deleteCodePromo 
+import { Plus, Edit, Trash2, Copy, Calendar, Users, Home, Filter, BarChart2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import {
+  getCodesPromo, createCodePromo, updateCodePromo,
+  deleteCodePromo, getCodeReservations, getUsers
 } from '../../services/promoCodesService';
 import roomsService from '../../services/roomService';
 
@@ -17,9 +15,14 @@ const PromoCodes = () => {
   const [editingCode, setEditingCode] = useState(null);
   const [filter, setFilter] = useState('all');
   const toast = useToast();
+  const [users, setUsers] = useState([]);
+  const [expandedCode, setExpandedCode] = useState(null);
+  const [codeReservations, setCodeReservations] = useState({});
+  const [loadingReservations, setLoadingReservations] = useState(false);
 
   const [formData, setFormData] = useState({
     code: '',
+    titulaire: '',
     description: '',
     type: 'percentage',
     value: 10,
@@ -35,6 +38,7 @@ const PromoCodes = () => {
   useEffect(() => {
     loadCodes();
     loadRooms();
+    loadUsers();
   }, []);
 
   // Fonction utilitaire pour formater les dates
@@ -97,6 +101,7 @@ const PromoCodes = () => {
       const submissionData = {
         code: formData.code,
         description: formData.description,
+        titulaire: formData.titulaire || null,
         type: formData.type,
         value: formData.value,
         applicableToAll: formData.applicableToAll,
@@ -149,6 +154,7 @@ const PromoCodes = () => {
     setFormData({
       code: '',
       description: '',
+      titulaire: '',
       type: 'percentage',
       value: 10,
       applicableToAll: true,
@@ -208,6 +214,7 @@ const PromoCodes = () => {
     setFormData({
       code: code.code,
       description: code.description,
+      titulaire: code.titulaire?._id || code.titulaire || '',
       type: code.type,
       value: code.value,
       applicableToAll: code.applicableToAll,
@@ -219,6 +226,34 @@ const PromoCodes = () => {
       statut: code.statut
     });
     setShowForm(true);
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await getUsers();
+      const usersData = response.utilisateurs || response.data?.utilisateurs || [];
+      setUsers(usersData);
+    } catch (error) {
+      console.error('❌ Erreur chargement utilisateurs:', error);
+    }
+  };
+
+  const loadCodeReservations = async (codeId) => {
+    if (codeReservations[codeId]) {
+      setExpandedCode(expandedCode === codeId ? null : codeId);
+      return;
+    }
+    setLoadingReservations(true);
+    try {
+      const response = await getCodeReservations(codeId);
+      setCodeReservations(prev => ({ ...prev, [codeId]: response }));
+      setExpandedCode(codeId);
+    } catch (error) {
+      console.error('❌ Erreur chargement réservations:', error);
+      toast.error('Erreur lors du chargement des réservations');
+    } finally {
+      setLoadingReservations(false);
+    }
   };
 
   return (
@@ -421,6 +456,26 @@ const PromoCodes = () => {
                   <option value="inactif">Inactif</option>
                 </select>
               </div>
+
+              {/* Titulaire */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Titulaire (optionnel)</label>
+                <select
+                  value={formData.titulaire}
+                  onChange={(e) => setFormData({...formData, titulaire: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">🏨 Hôtel (aucun titulaire)</option>
+                  {users.map(user => (
+                    <option key={user._id} value={user._id}>
+                      {user.name} {user.surname} — {user.email}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Si un titulaire est défini, il peut suivre les performances de ce code depuis son espace
+                </p>
+              </div>
             </div>
 
             {/* Application aux chambres */}
@@ -530,6 +585,12 @@ const PromoCodes = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Titulaire
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Stats
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -552,12 +613,12 @@ const PromoCodes = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 max-w-xs">{code.description}</div>
-                      </td>
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {code.type === 'percentage' ? `${code.value}%` : `${code.value} FCFA`}
                         </div>
-                      </td>
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
                           {code.applicableToAll ? (
@@ -570,7 +631,7 @@ const PromoCodes = () => {
                             </span>
                           )}
                         </div>
-                      </td>
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500 space-y-1">
                           <div className="flex items-center space-x-1">
@@ -582,7 +643,7 @@ const PromoCodes = () => {
                             <span>{new Date(code.dateFin).toLocaleDateString('fr-FR')}</span>
                           </div>
                         </div>
-                      </td>
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
                           {code.utilisationActuelle || 0} / {code.utilisationMax}
@@ -592,7 +653,7 @@ const PromoCodes = () => {
                             Séjour min: {code.minimumStay} nuit(s)
                           </div>
                         )}
-                      </td>
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(status)}`}>
                           {status === 'actif' && 'Actif'}
@@ -600,7 +661,7 @@ const PromoCodes = () => {
                           {status === 'expire' && 'Expiré'}
                           {status === 'epuise' && 'Épuisé'}
                         </span>
-                      </td>
+                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button
                           onClick={() => handleEdit(code)}
@@ -616,13 +677,33 @@ const PromoCodes = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                      </td>
+                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {code.titulaire ? (
+                          <div className="text-xs text-gray-700">
+                            <div className="font-medium">{code.titulaire.name} {code.titulaire.surname}</div>
+                            <div className="text-gray-400">{code.titulaire.email}</div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">Hôtel</span>
+                        )}
+                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => loadCodeReservations(code._id)}
+                          className="flex items-center gap-1 text-purple-600 hover:text-purple-900 text-xs"
+                          title="Voir les réservations"
+                        >
+                          <BarChart2 className="w-4 h-4" />
+                          {expandedCode === code._id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </button>
+                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan="8" className="px-6 py-12 text-center">
+                  <td colSpan="10" className="px-6 py-12 text-center">
                     <div className="text-gray-500 text-lg">
                       {filter === 'all' ? 'Aucun code promo créé' : `Aucun code promo ${filter}`}
                     </div>
@@ -634,13 +715,88 @@ const PromoCodes = () => {
                         Voir tous les codes
                       </button>
                     )}
-                  </td>
+                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Panneau stats/réservations */}
+      {expandedCode && codeReservations[expandedCode] && (
+        <div className="bg-white rounded-xl shadow-sm border border-purple-200 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <BarChart2 className="w-5 h-5 text-purple-600" />
+              Performances — {codes.find(c => c._id === expandedCode)?.code}
+            </h3>
+            <button onClick={() => setExpandedCode(null)} className="text-gray-400 hover:text-gray-700">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Stats globales */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {[
+              { label: 'Réservations', value: codeReservations[expandedCode].stats?.nombreReservations || 0, color: 'blue' },
+              { label: 'Nuitées totales', value: codeReservations[expandedCode].stats?.totalNuits || 0, color: 'green' },
+              { label: 'Montant généré', value: new Intl.NumberFormat('fr-FR').format(codeReservations[expandedCode].stats?.totalMontant || 0) + ' FCFA', color: 'amber' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className={`bg-${color}-50 border border-${color}-100 rounded-xl p-4 text-center`}>
+                <div className={`text-2xl font-bold text-${color}-700`}>{value}</div>
+                <div className="text-xs text-gray-500 mt-1">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Liste réservations */}
+          {codeReservations[expandedCode].reservations?.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {['Client', 'Chambre', 'Arrivée', 'Départ', 'Nuits', 'Montant', 'Statut'].map(h => (
+                      <th key={h} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {codeReservations[expandedCode].reservations.map(res => (
+                    <tr key={res._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-xs">
+                        {res.client
+                          ? `${res.client.name} ${res.client.surname}`
+                          : `${res.clientInfo?.name || ''} ${res.clientInfo?.surname || ''}`}
+                      </td>
+                      <td className="px-4 py-2 text-xs">{res.chambre?.name || '—'}</td>
+                      <td className="px-4 py-2 text-xs">{new Date(res.checkIn).toLocaleDateString('fr-FR')}</td>
+                      <td className="px-4 py-2 text-xs">{new Date(res.checkOut).toLocaleDateString('fr-FR')}</td>
+                      <td className="px-4 py-2 text-xs font-medium">{res.nights}</td>
+                      <td className="px-4 py-2 text-xs font-medium text-blue-700">
+                        {new Intl.NumberFormat('fr-FR').format(res.totalAmount)} FCFA
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          res.status === 'confirmed' || res.status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : res.status === 'pending_payment' || res.status === 'partially_paid'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {res.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-center text-gray-400 text-sm py-6">Aucune réservation avec ce code pour le moment</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
