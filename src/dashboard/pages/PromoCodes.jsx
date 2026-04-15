@@ -228,15 +228,19 @@ const PromoCodes = () => {
     setShowForm(true);
   };
 
-  const loadUsers = async () => {
-    try {
-      const response = await getUsers();
-      const usersData = response.utilisateurs || response.data?.utilisateurs || [];
-      setUsers(usersData);
-    } catch (error) {
-      console.error('❌ Erreur chargement utilisateurs:', error);
-    }
-  };
+const loadUsers = async () => {
+  try {
+    const response = await getUsers();
+    // getUsers retourne directement le tableau d'utilisateurs
+    const usersData = Array.isArray(response) ? response : [];
+    setUsers(usersData);
+    console.log(`👥 ${usersData.length} utilisateur(s) chargé(s) pour le select titulaire`);
+  } catch (error) {
+    console.error('❌ Erreur chargement utilisateurs:', error);
+    // Optionnel : afficher un message utilisateur
+    toast.error('Impossible de charger la liste des utilisateurs');
+  }
+};
 
   const loadCodeReservations = async (codeId) => {
     if (codeReservations[codeId]) {
