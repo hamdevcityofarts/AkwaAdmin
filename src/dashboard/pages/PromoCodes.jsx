@@ -788,7 +788,7 @@ const PromoCodes = () => {
                         </span>
                       </td>
                     </tr>
-                  ))}
+                  ))} 
                 </tbody>
               </table>
             </div>
