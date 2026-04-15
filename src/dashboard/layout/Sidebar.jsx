@@ -91,7 +91,7 @@ const Sidebar = () => {
       requiredPermission: 'gestion_utilisateurs',
       visibleToRoles: ['admin']
     },
-    {
+   /* {
       path: '/dashboard/reports',
       icon: BarChart3,
       label: 'Rapports',
@@ -111,7 +111,7 @@ const Sidebar = () => {
       label: 'Restaurant',
       requiredPermission: 'gestion_restaurant',
       visibleToRoles: ['admin', 'manager', 'supervisor']
-    },
+    },*/
     {
       path: '/dashboard/system',
       icon: Settings,
