@@ -210,7 +210,7 @@ export const getCodeReservations = async (id) => {
 export const getUsers = async () => {
   try {
     // Correction : l'endpoint backend est /users (pas /utilisateurs)
-    const response = await api.get('/users');
+    const response = await api.get('/utilisateurs');
     return response.data; // retourne directement le tableau d'utilisateurs
   } catch (error) {
     console.error('❌ Erreur récupération utilisateurs:', error.response?.data || error.message);
