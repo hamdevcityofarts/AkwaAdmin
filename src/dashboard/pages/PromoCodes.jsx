@@ -461,25 +461,27 @@ const loadUsers = async () => {
                 </select>
               </div>
 
-              {/* Titulaire */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Titulaire (optionnel)</label>
-                <select
-                  value={formData.titulaire}
-                  onChange={(e) => setFormData({...formData, titulaire: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">🏨 Hôtel (aucun titulaire)</option>
-                  {users.map(user => (
-                    <option key={user._id} value={user._id}>
-                      {user.name} {user.surname} — {user.email}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Si un titulaire est défini, il peut suivre les performances de ce code depuis son espace
-                </p>
-              </div>
+             {/* Titulaire */}
+<div>
+  <label className="block text-sm font-medium mb-2">Titulaire (optionnel)</label>
+  <select
+    value={formData.titulaire}
+    onChange={(e) => setFormData({...formData, titulaire: e.target.value})}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  >
+    <option value="">🏨 Hôtel (aucun titulaire)</option>
+    {users.map(user => (
+      <option key={user._id} value={user._id}>
+        {user.name} {user.surname} — {user.email}
+      </option>
+    ))}
+  </select>
+  <p className="text-xs text-gray-500 mt-1">
+    {users.length === 0 && getUserRoleFromToken() !== 'admin' 
+      ? "Seuls les administrateurs peuvent attribuer un titulaire." 
+      : "Si un titulaire est défini, il peut suivre les performances de ce code depuis son espace"}
+  </p>
+</div>
             </div>
 
             {/* Application aux chambres */}
