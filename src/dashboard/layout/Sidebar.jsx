@@ -187,8 +187,8 @@ const Sidebar = () => {
         </div>
         
         {/* ✅ Affichage du rôle actuel */}
-        <div className="mt-4 text-center">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 border border-blue-200">
+        <div className=" text-center">
+          <div className="inline-flex items-center px-3  rounded-full bg-blue-50 border border-blue-200">
             <Shield className="w-3 h-3 text-blue-600 mr-1" />
             <span className="text-xs font-medium text-blue-700">
               {getRoleLabel(userRole)}
