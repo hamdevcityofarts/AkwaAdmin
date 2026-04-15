@@ -181,7 +181,7 @@ const Sidebar = () => {
             <img 
               src={logo}
               alt="Grand Hotel Logo" 
-              className="h-14 w-14 object-contain"
+              className="h-16 w-16 object-contain"
             />
           </div>
         </div>
